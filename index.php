@@ -55,7 +55,7 @@ App::plugin("adamkiss/kirby-sqlite-queue", [
 			'description' => 'Queue: show stats',
 			'args' => [],
 			'command' => function(Kirby\CLI\CLI $cli) {
-				$cli->out('Stats');
+				# wip
 			}
 		],
 		'queue:work' => [
@@ -68,9 +68,10 @@ App::plugin("adamkiss/kirby-sqlite-queue", [
 				]
 			],
 			'command' => function(Kirby\CLI\CLI $cli) {
+				// @codeCoverageIgnoreStart
+
 				pcntl_async_signals(true);
 				set_time_limit(0);
-				// register_shutdown_function(fn () => exit());
 				pcntl_signal(SIGTERM, fn () => exit());
 				pcntl_signal(SIGINT, fn () => exit());
 
@@ -80,10 +81,9 @@ App::plugin("adamkiss/kirby-sqlite-queue", [
 					}
 
 					sleep($cli->climate()->arguments->get('sleep'));
-					ray('sleeping');
 				}
 
-				$cli->out('Stats');
+				// @codeCoverageIgnoreEnd
 			}
 		]
 	]
