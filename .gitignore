@@ -1,0 +1,15 @@
+# OS files
+.DS_Store
+.php_cs.cache
+
+# Composer dependencies (just dev for now
+/vendor
+
+# Test stuff
+/test/kirby
+/test/logs
+/.phpunit*
+
+# Test fixture stuff
+test/site/db/*
+!test/site/db/.gitkeep

@@ -1,0 +1,43 @@
+{
+    "name": "adamkiss/kirby-sqlite-queue",
+    "description": "A simple queue for Kirby 3, using SQLite database as the driver, using your database or its own.",
+    "type": "kirby-plugin",
+	"version": "0.0.1",
+    "require": {
+		"php": ">=8.1.0",
+        "getkirby/composer-installer": "^1.2"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Adamkiss\\SqliteQueue\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Adam Kiss",
+            "email": "iam@adamkiss.com"
+        }
+    ],
+    "config": {
+        "allow-plugins": {
+            "getkirby/composer-installer": true,
+            "pestphp/pest-plugin": true
+        }
+    },
+    "require-dev": {
+        "getkirby/cms": "^3.9",
+        "getkirby/cli": "^1.1",
+        "pestphp/pest": "^2.12"
+    },
+    "extra": {
+        "kirby-cms-path": "test/kirby"
+    },
+	"scripts": {
+		"post-install-cmd": "@php post-install.php",
+		"test": "pest",
+		"ri": [
+			"rm -rf vendor test/logs test/kirby && composer install"
+		]
+	}
+}
