@@ -1,0 +1,46 @@
+name: CI - Run tests
+on:
+  push:
+  pull_request:
+  workflow_call:
+
+jobs:
+  tests:
+    name: "Unit tests - PHP ${{ matrix.php }}"
+
+    # if on pull request, only run if from a fork
+    # (our own repo is covered by the push event)
+    if: >
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name != github.repository
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      matrix:
+        php: ["8.0", "8.1", "8.2"]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php }}
+        tools: composer:v2
+        coverage: none
+
+    - name: Setup Problem Matches
+      run: |
+        echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+        echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+    - name: Install PHP dependencies
+      run: composer update --${{ matrix.dependency-version }} --no-interaction --no-progress --ansi
+
+    - name: Unit Tests
+      run: ./vendor/bin/pest --compact
+
+    - name: Code coverage
+      run: ./vendor/bin/pest --coverage --min=96
