@@ -96,9 +96,12 @@ class Database extends KirbyDatabase {
 	 */
 	function next_job(): ?Job {
 		return $this->table('jobs')
-			->where('status', 0)
-			->where('available_at <= datetime("now", "localtime")')
-			->orWhere('available_at IS NULL')
+			->where(['status' => 0])
+			->andWhere(
+				fn($w) => $w
+					->where('available_at <= datetime("now", "localtime")')
+					->orWhere('available_at IS NULL')
+			)
 			->order('available_at asc')
 			->order('priority desc')
 

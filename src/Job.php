@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Adamkiss\SqliteQueue;
 
-use Kirby\Toolkit\Obj;
 use Kirby\Toolkit\Date;
-use Kirby\Toolkit\Collection;
 use Adamkiss\SqliteQueue\Plugin;
 
 class Job
