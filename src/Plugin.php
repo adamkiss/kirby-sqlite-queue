@@ -135,4 +135,11 @@ class Plugin extends Facade {
 	{
 		return $this->db()->count_jobs();
 	}
+
+	/**
+	 * Get stats about the queues (optionally, for a specific queue)
+	 */
+	function stats(?string $for = null) : array {
+		return $this->db()->get_stats($for);
+	}
 }

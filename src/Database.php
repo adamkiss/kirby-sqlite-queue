@@ -4,8 +4,6 @@ namespace Adamkiss\SqliteQueue;
 
 use Kirby\Toolkit\Obj;
 use Kirby\Toolkit\Str;
-use Kirby\Filesystem\F;
-use Kirby\Toolkit\Date;
 use Adamkiss\SqliteQueue\Job;
 use Kirby\Database\Database as KirbyDatabase;
 
@@ -110,5 +108,41 @@ class Database extends KirbyDatabase {
 			->all()
 
 			->first();
+	}
+
+	/**
+	 * Get stats about the jobs
+	 */
+	function get_stats(?string $for = null) : array {
+		$jobs = $this->table('jobs')
+			->select('count(id) as count, queue, status')
+			->group('queue, status')
+			->all();
+		$logs = $this->table('logs')
+			->select('count(id) as count, queue, status')
+			->group('queue, status')
+			->all();
+
+		$queues = $this->plugin()->all()->clone()
+			->map(fn($q) => new Obj([
+				'Queue name' => $q->name(),
+				'Waiting' => 0,
+				'In progress' => 0,
+				'Completed' => 0,
+				'Failed' => 0
+			]));
+
+		foreach ($jobs as $row) {
+			$queues->get($row->queue())->{$row->status() === "0" ? 'Waiting' : 'In progress'} = intval($row->count());
+		}
+		foreach ($logs as $row) {
+			$queues->get($row->queue())->{$row->status() === "0" ? 'Completed' : 'Failed'} = intval($row->count());
+		}
+
+		if (! is_null($for)) {
+			return $queues->get($for)->toArray();
+		}
+
+		return $queues->toArray(fn($q) => $q->toArray());
 	}
 }

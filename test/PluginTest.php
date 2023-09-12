@@ -3,6 +3,7 @@
 use Adamkiss\SqliteQueue\Plugin;
 use Adamkiss\SqliteQueue\Queue;
 use Kirby\Exception\InvalidArgumentException;
+use Kirby\Filesystem\F;
 
 it('integrates with Kirby', function () {
 	$kirby = createKirby([
@@ -106,4 +107,83 @@ it('returns the next job to be done', function() {
 	$kirby->site()->queue()->add(['do' => 'now']);
 
 	expect(queue()->next_job())->toBeInstanceOf(\Adamkiss\SqliteQueue\Job::class);
+});
+
+it('provides stats about queues', function() {
+
+	function process_job_and_sometime_fail(array $data) {
+		if ($data['i'] % 7 === 0) {
+			throw new Exception('Failed');
+		}
+		return null;
+	}
+
+	F::remove(kirby()->root('site') . '/db/stats-test.sqlite');
+	$kirby = createKirby([
+		'database' => kirby()->root('site') . '/db/stats-test.sqlite',
+		'queues' => [
+			'first' => [
+				'handler' => 'process_job_and_sometime_fail',
+				'retries' => 0
+			],
+			'second' => [
+				'handler' => 'process_job_and_sometime_fail',
+				'retries' => 0
+			],
+			'third' => [
+				'handler' => 'process_job_and_sometime_fail',
+				'retries' => 0
+			],
+		]
+	]);
+	$plugin = Plugin::instance($kirby);
+
+	// add 200 jobs to queues
+	for($i = 0; $i < 200; $i++) {
+		$kirby->site()->queue(['first', 'second', 'third'][$i % 3])->add(['i' => $i]);
+	}
+	// process 150 jobs
+	for($i = 0; $i < 150; $i++) {
+		$kirby->site()->queue()->next_job()->execute();
+	}
+
+	expect($plugin->stats())->toBe([
+		"first" => [
+			"Queue name" => "first",
+			"Waiting" => 17,
+			"In progress" => 0,
+			"Completed" => 42,
+			"Failed" => 8,
+		],
+		"second" => [
+			"Queue name" => "second",
+			"Waiting" => 17,
+			"In progress" => 0,
+			"Completed" => 43,
+			"Failed" => 7,
+		],
+		"third" => [
+			"Queue name" => "third",
+			"Waiting" => 16,
+			"In progress" => 0,
+			"Completed" => 43,
+			"Failed" => 7,
+		],
+	]);
+
+	expect($plugin->stats('first'))->toBe([
+		"Queue name" => "first",
+		"Waiting" => 17,
+		"In progress" => 0,
+		"Completed" => 42,
+		"Failed" => 8,
+	]);
+
+	expect($kirby->site()->queue('third')->stats())->toBe([
+		"Queue name" => "third",
+		"Waiting" => 16,
+		"In progress" => 0,
+		"Completed" => 43,
+		"Failed" => 7,
+	]);
 });

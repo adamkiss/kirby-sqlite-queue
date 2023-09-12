@@ -145,8 +145,8 @@ class Queue {
 		);
 	}
 
-	public function stats()
+	public function stats(): array
 	{
-		# WIP
+		return $this->plugin()->stats($this->name());
 	}
 }
