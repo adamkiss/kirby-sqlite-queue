@@ -46,16 +46,18 @@ App::plugin("adamkiss/kirby-sqlite-queue", [
 		}
 	],
 
-	'hooks' => [
-		'system.loadPlugins:after' => function() {}
-	],
-
 	'commands' => [
 		'queue:stats' => [
 			'description' => 'Queue: show stats',
 			'args' => [],
-			'command' => function(Kirby\CLI\CLI $cli) {
-				# wip
+			'command' => function(Kirby\CLI\CLI $cli, bool $test = false) {
+				$stats = queue()->stats();
+				if (!empty($stats) && is_array($stats)) {
+					$cli->table($stats);
+					return;
+				} else {
+					$cli->out('No queues found / no jobs ran yet.'); // @codeCoverageIgnore
+				}
 			}
 		],
 		'queue:work' => [
@@ -64,26 +66,28 @@ App::plugin("adamkiss/kirby-sqlite-queue", [
 				'sleep' => [
 					'description' => 'Sleep time',
 					'required' => false,
-					'default' => 5
+					'defaultValue' => 5
 				]
 			],
 			'command' => function(Kirby\CLI\CLI $cli) {
-				// @codeCoverageIgnoreStart
-
 				pcntl_async_signals(true);
 				set_time_limit(0);
 				pcntl_signal(SIGTERM, fn () => exit());
 				pcntl_signal(SIGINT, fn () => exit());
+
+				$sleep = $cli->climate()->arguments->get('sleep');
 
 				while(true) {
 					while($job = queue()->next_job()) {
 						$job->execute();
 					}
 
-					sleep($cli->climate()->arguments->get('sleep'));
-				}
+					if (is_null($sleep)) {
+						break;
+					}
 
-				// @codeCoverageIgnoreEnd
+					sleep($sleep); // @codeCoverageIgnore
+				}
 			}
 		]
 	]
