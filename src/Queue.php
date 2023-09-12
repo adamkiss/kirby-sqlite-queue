@@ -31,7 +31,10 @@ class Queue {
 		$this->options = A::merge($defaults, $options);
 
 		// expand callable handler if it was passed as array
-		if (is_array($this->options['handler']) && is_callable($this->options['handler'])) {
+		if (
+			(is_array($this->options['handler']) || is_string($this->options['handler']))
+			&& is_callable($this->options['handler'])
+		) {
 			$this->options['handler'] = Closure::fromCallable($this->options['handler']);
 		}
 	}

@@ -13,6 +13,12 @@ class TestCallable {
 	}
 }
 
+if(! function_exists('test_callable_in_string')) {
+	function test_callable_in_string($data) {
+		return $data['param1'];
+	}
+}
+
 beforeEach(function () {
 	// Reset database
 	F::remove(__DIR__ . '/site/db/queue.sqlite');
@@ -38,6 +44,10 @@ beforeEach(function () {
 				'backoff' => 0,
 			],
 			'fails-with-backoff' => fn($data) => throw new Exception('Failed'),
+			'handler-in-string' => 'test_callable_in_string',
+			'handler-in-string-in-array' => [
+				'handler' => 'test_callable_in_string',
+			]
 		]
 	]);
 	$this->plugin = Plugin::instance($this->kirby);
@@ -170,4 +180,21 @@ it('can back off a retry of a failed job', function() {
 		->toBeGreaterThan(new Date('+14 minutes +59 seconds'))
 		->toBeLessThan(new Date('+15 minutes +1 seconds'));
 		// Default backoff time is 15 minutes
+});
+
+describe('handler formats', function () {
+	test('closures', function() {
+		expect($this->plugin->get('important')->handler())->toBeInstanceOf(Closure::class);
+		expect($this->plugin->get('fails')->handler())->toBeInstanceOf(Closure::class);
+	});
+
+	test('class method arrays', function() {
+		expect($this->plugin->get('unimportant')->handler())->toBeInstanceOf(Closure::class);
+		expect($this->plugin->get('default')->handler())->toBeInstanceOf(Closure::class);
+	});
+
+	test('strings', function() {
+		expect($this->plugin->get('handler-in-string')->handler())->toBeInstanceOf(Closure::class);
+		expect($this->plugin->get('handler-in-string-in-array')->handler())->toBeInstanceOf(Closure::class);
+	});
 });
