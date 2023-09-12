@@ -20,7 +20,7 @@ class Result extends Obj {
 		public int $status = 0,
 		public mixed $data = null,
 		public mixed $result = null,
-		public int $attempt = 0,
+		public int $attempt = 1,
 	) {
 		$this->queue = $queue instanceof Queue ? $queue : $this->plugin->get($queue);
 	}
@@ -34,7 +34,7 @@ class Result extends Obj {
 	) : Result {
 		return new self(
 			plugin: $plugin,
-			id: intval($row['job_id']),
+			id: intval($row['id']),
 			data: unserialize($row['data']),
 			result: unserialize($row['result']),
 			status: intval($row['status']),
