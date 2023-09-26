@@ -6,7 +6,6 @@ use Closure;
 use DateInterval;
 use Kirby\Toolkit\A;
 use Kirby\Toolkit\Date;
-use Kirby\Toolkit\Obj;
 
 class Queue
 {
@@ -95,7 +94,6 @@ class Queue
 	{
 		return $this->options['sync'];
 	}
-
 
 	/**
 	 * Get the number of jobs in the queue.

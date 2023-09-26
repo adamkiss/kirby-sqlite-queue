@@ -1,16 +1,17 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Adamkiss\SqliteQueue;
 
-use Kirby\Toolkit\Obj;
 use Kirby\Toolkit\Date;
+use Kirby\Toolkit\Obj;
 
-class Result extends Obj {
+class Result extends Obj
+{
 	protected Queue $queue;
 
-	function __construct(
+	public function __construct(
 		protected Plugin $plugin,
 		public Date $created_at,
 		public Date $executed_at,
@@ -31,13 +32,13 @@ class Result extends Obj {
 	public static function from_db(
 		Plugin $plugin,
 		array $row,
-	) : Result {
+	): Result {
 		return new self(
 			plugin: $plugin,
-			id: intval($row['id']),
+			id: (int)($row['id']),
 			data: unserialize($row['data']),
 			result: unserialize($row['result']),
-			status: intval($row['status']),
+			status: (int)($row['status']),
 			created_at: new Date($row['created_at']),
 			executed_at: new Date($row['executed_at']),
 			completed_at: new Date($row['completed_at']),
@@ -47,7 +48,8 @@ class Result extends Obj {
 	/**
 	 * Save the result to the database
 	 */
-	public function save() : self {
+	public function save(): self
+	{
 		$this->plugin->db()->table('logs')
 			->insert([
 				'queue' => $this->queue->name(),
@@ -63,5 +65,4 @@ class Result extends Obj {
 		$this->id = $this->plugin->db()->lastId();
 		return $this;
 	}
-
 }

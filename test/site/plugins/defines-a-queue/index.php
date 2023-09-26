@@ -2,9 +2,9 @@
 
 use Kirby\Cms\App;
 
-App::plugin("adamkiss/defines-a-queue", [
+App::plugin('adamkiss/defines-a-queue', [
 	'hooks' => [
-		'system.loadPlugins:after' => function() {
+		'system.loadPlugins:after' => function () {
 			if (kirby()->option('adamkiss.defines-a-queue') !== true) {
 				return;
 			}

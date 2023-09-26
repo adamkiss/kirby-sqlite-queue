@@ -1,6 +1,7 @@
 # OS files
 .DS_Store
 .php_cs.cache
+.php-cs-fixer.cache
 
 # Composer dependencies (just dev for now
 /vendor

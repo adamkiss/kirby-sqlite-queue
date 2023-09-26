@@ -1,11 +1,10 @@
 <?php
 
-use Kirby\Filesystem\F;
-use Kirby\Toolkit\Date;
 use Adamkiss\SqliteQueue\Job;
-use Adamkiss\SqliteQueue\Queue;
 use Adamkiss\SqliteQueue\Plugin;
 use Adamkiss\SqliteQueue\Result;
+use Kirby\Filesystem\F;
+use Kirby\Toolkit\Date;
 
 class TestCallable
 {

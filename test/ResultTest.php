@@ -7,7 +7,7 @@ it('can read create itself from db', function () {
 	$kirby = createKirby([
 		'database' => ':memory:',
 		'queues' => [
-			'default' => fn($data) => $data['site']->queue()->next_job()->data,
+			'default' => fn ($data) => $data['site']->queue()->next_job()->data,
 		],
 	]);
 	$site = $kirby->site();
@@ -15,7 +15,7 @@ it('can read create itself from db', function () {
 	$job1 = $site->queue()->add(['name' => 'job1', 'site' => $site]);
 
 	$result1 = $site->queue()->next_job()->execute();
-	$result2 = $site->queue()->db()->table('logs')->fetch(fn($r) => Result::from_db($site->queue(), $r))->limit(1)->all()->first();
+	$result2 = $site->queue()->db()->table('logs')->fetch(fn ($r) => Result::from_db($site->queue(), $r))->limit(1)->all()->first();
 
 	// dates are not equal due to sqlite precision
 	// expect($result2)->toEqual($result1);

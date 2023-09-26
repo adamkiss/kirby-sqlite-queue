@@ -1,13 +1,12 @@
 <?php
 
-use Adamkiss\SqliteQueue\Plugin;
 
 // @covers Job::lock
 it('Locks itself correctly', function () {
 	$kirby = createKirby([
 		'database' => ':memory:',
 		'queues' => [
-			'default' => fn($data) => $data['site']->queue()->next_job()->data,
+			'default' => fn ($data) => $data['site']->queue()->next_job()->data,
 		],
 	]);
 	$site = $kirby->site();
@@ -17,5 +16,5 @@ it('Locks itself correctly', function () {
 
 	$result = $site->queue()->next_job()->execute();
 
-	expect($result->result())->toEqual(['name' => 'job2', 'site' => $site,]);
+	expect($result->result())->toEqual(['name' => 'job2', 'site' => $site, ]);
 });

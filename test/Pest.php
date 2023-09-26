@@ -28,7 +28,7 @@ use Kirby\Toolkit\A;
 */
 
 expect()->extend('toBeOne', function () {
-    return $this->toBe(1);
+	return $this->toBe(1);
 });
 
 expect()->extend('ray', function () {
@@ -46,7 +46,6 @@ expect()->extend('ray', function () {
 | global functions to help you to reduce the number of lines of code in your test files.
 |
 */
-
 
 function createKirby(array $queueOptions = [], array $options = [], bool $render = false): App
 {

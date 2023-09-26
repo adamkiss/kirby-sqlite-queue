@@ -1,8 +1,8 @@
 <?php
 
-use Kirby\Cms\App;
-use Adamkiss\SqliteQueue\Queue;
 use Adamkiss\SqliteQueue\Plugin;
+use Adamkiss\SqliteQueue\Queue;
+use Kirby\Cms\App;
 
 load([
 	'Adamkiss\\SqliteQueue\\Plugin' => 'src/Plugin.php',
@@ -12,15 +12,13 @@ load([
 	'Adamkiss\\SqliteQueue\\Stats' => 'src/Stats.php',
 ]);
 
-App::plugin("adamkiss/kirby-sqlite-queue", [
-
+App::plugin('adamkiss/kirby-sqlite-queue', [
 	'options' => [
 		// plugin options
 		'database' => kirby()->root('site') . '/db/queue.sqlite',
 		'tables' => [
 			'jobs' => 'jobs',
-			'logs' => 'logs',
-			'info' => 'info'
+			'results' => 'results'
 		],
 
 		// queue options (defaults)
@@ -31,11 +29,10 @@ App::plugin("adamkiss/kirby-sqlite-queue", [
 
 		// queues
 		'queues' => [],
-
 	],
 
 	'siteMethods' => [
-		'queue' => function(?string $q = null): Plugin|Queue|null {
+		'queue' => function (?string $q = null): Plugin|Queue|null {
 			$plugin = Plugin::instance($this->kirby());
 
 			if (is_null($q)) {
@@ -50,7 +47,7 @@ App::plugin("adamkiss/kirby-sqlite-queue", [
 		'queue:stats' => [
 			'description' => 'Queue: show stats',
 			'args' => [],
-			'command' => function(Kirby\CLI\CLI $cli, bool $test = false) {
+			'command' => function (Kirby\CLI\CLI $cli, bool $test = false) {
 				$stats = queue()->stats();
 				if (!empty($stats) && is_array($stats)) {
 					$cli->table($stats);
@@ -69,7 +66,7 @@ App::plugin("adamkiss/kirby-sqlite-queue", [
 					'defaultValue' => 5
 				]
 			],
-			'command' => function(Kirby\CLI\CLI $cli) {
+			'command' => function (Kirby\CLI\CLI $cli) {
 				pcntl_async_signals(true);
 				set_time_limit(0);
 				pcntl_signal(SIGTERM, fn () => exit());
@@ -77,8 +74,8 @@ App::plugin("adamkiss/kirby-sqlite-queue", [
 
 				$sleep = $cli->climate()->arguments->get('sleep');
 
-				while(true) {
-					while($job = queue()->next_job()) {
+				while (true) {
+					while ($job = queue()->next_job()) {
 						$job->execute();
 					}
 
@@ -93,7 +90,7 @@ App::plugin("adamkiss/kirby-sqlite-queue", [
 	]
 ]);
 
-if (! function_exists('queue') && (defined('KIRBY_HELPER_QUEUE') !== true || constant('KIRBY_HELPER_QUEUE') === false)) {
+if (!function_exists('queue') && (defined('KIRBY_HELPER_QUEUE') !== true || constant('KIRBY_HELPER_QUEUE') === false)) {
 	function queue(?string $queue = null): Plugin|Queue|null
 	{
 		return kirby()->site()->queue($queue);

@@ -2,10 +2,9 @@
 
 namespace Adamkiss\SqliteQueue;
 
+use Kirby\Database\Database as KirbyDatabase;
 use Kirby\Toolkit\Obj;
 use Kirby\Toolkit\Str;
-use Adamkiss\SqliteQueue\Job;
-use Kirby\Database\Database as KirbyDatabase;
 
 /**
  * Database is the contact point between the kirby3-database-queue plugin and the database.
@@ -14,7 +13,8 @@ use Kirby\Database\Database as KirbyDatabase;
  * @copyright 2023 Adam Kiss
  * @license MIT
  */
-class Database extends KirbyDatabase {
+class Database extends KirbyDatabase
+{
 	protected KirbyDatabase $db;
 
 	public function __construct(
@@ -39,7 +39,8 @@ class Database extends KirbyDatabase {
 		return $this->plugin;
 	}
 
-	function setup() : void {
+	public function setup(): void
+	{
 		foreach (Str::split(<<<SQL
 			CREATE TABLE IF NOT EXISTS 'jobs' (
 				'id' INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -76,13 +77,14 @@ class Database extends KirbyDatabase {
 	/**
 	 * Count jobs in the queue - optionally filtered by queue name.
 	 */
-	function count_jobs(?string $queue = null) : int {
+	public function count_jobs(?string $queue = null): int
+	{
 		$query = $this->table('jobs')
 			->select('id')
 			->where('status', 0)
 			->orWhere('status', 1);
 
-		if (! is_null($queue)) {
+		if (!is_null($queue)) {
 			$query->where(['queue' => $queue]);
 		}
 
@@ -92,18 +94,19 @@ class Database extends KirbyDatabase {
 	/**
 	 * Get the next job in the queue
 	 */
-	function next_job(): ?Job {
+	public function next_job(): ?Job
+	{
 		return $this->table('jobs')
 			->where(['status' => 0])
 			->andWhere(
-				fn($w) => $w
+				fn ($w) => $w
 					->where('available_at <= datetime("now", "localtime")')
 					->orWhere('available_at IS NULL')
 			)
 			->order('available_at asc')
 			->order('priority desc')
 
-			->fetch(fn($row) => Job::from_db($this->plugin(), $row))
+			->fetch(fn ($row) => Job::from_db($this->plugin(), $row))
 			->limit(1)
 			->all()
 
@@ -113,7 +116,8 @@ class Database extends KirbyDatabase {
 	/**
 	 * Get stats about the jobs
 	 */
-	function get_stats(?string $for = null) : array {
+	public function get_stats(?string $for = null): array
+	{
 		$jobs = $this->table('jobs')
 			->select('count(id) as count, queue, status')
 			->group('queue, status')
@@ -124,7 +128,7 @@ class Database extends KirbyDatabase {
 			->all();
 
 		$queues = $this->plugin()->all()->clone()
-			->map(fn($q) => new Obj([
+			->map(fn ($q) => new Obj([
 				'Queue name' => $q->name(),
 				'Waiting' => 0,
 				'In progress' => 0,
@@ -133,16 +137,16 @@ class Database extends KirbyDatabase {
 			]));
 
 		foreach ($jobs as $row) {
-			$queues->get($row->queue())->{$row->status() === "0" ? 'Waiting' : 'In progress'} = intval($row->count());
+			$queues->get($row->queue())->{$row->status() === '0' ? 'Waiting' : 'In progress'} = (int)($row->count());
 		}
 		foreach ($logs as $row) {
-			$queues->get($row->queue())->{$row->status() === "0" ? 'Completed' : 'Failed'} = intval($row->count());
+			$queues->get($row->queue())->{$row->status() === '0' ? 'Completed' : 'Failed'} = (int)($row->count());
 		}
 
-		if (! is_null($for)) {
+		if (!is_null($for)) {
 			return $queues->get($for)->toArray();
 		}
 
-		return $queues->toArray(fn($q) => $q->toArray());
+		return $queues->toArray(fn ($q) => $q->toArray());
 	}
 }

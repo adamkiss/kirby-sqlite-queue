@@ -37,6 +37,7 @@
 		"test": "pest",
 		"ri": [
 			"rm -rf vendor test/logs test/kirby && composer install"
-		]
+		],
+		"fix": "PHP_CS_FIXER_IGNORE_ENV=true php-cs-fixer fix"
 	}
 }

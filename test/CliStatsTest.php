@@ -1,12 +1,12 @@
 <?php
 
-use Kirby\Filesystem\F;
 use Adamkiss\SqliteQueue\Plugin;
+use Kirby\Filesystem\F;
 use League\CLImate\Util\Writer\Buffer;
 
-test('Complex Stats & CLI test', function() {
-
-	function process_job_and_sometime_fail(array $data) {
+test('Complex Stats & CLI test', function () {
+	function process_job_and_sometime_fail(array $data)
+	{
 		if ($data['i'] % 7 === 0) {
 			throw new Exception('Failed');
 		}
@@ -34,52 +34,52 @@ test('Complex Stats & CLI test', function() {
 	$plugin = Plugin::instance($kirby);
 
 	// add 200 jobs to queues
-	for($i = 0; $i < 200; $i++) {
+	for ($i = 0; $i < 200; $i++) {
 		$kirby->site()->queue(['first', 'second', 'third'][$i % 3])->add(['i' => $i]);
 	}
 	// process 150 jobs
-	for($i = 0; $i < 150; $i++) {
+	for ($i = 0; $i < 150; $i++) {
 		$kirby->site()->queue()->next_job()->execute();
 	}
 
 	expect($plugin->stats())->toBe([
-		"first" => [
-			"Queue name" => "first",
-			"Waiting" => 17,
-			"In progress" => 0,
-			"Completed" => 42,
-			"Failed" => 8,
+		'first' => [
+			'Queue name' => 'first',
+			'Waiting' => 17,
+			'In progress' => 0,
+			'Completed' => 42,
+			'Failed' => 8,
 		],
-		"second" => [
-			"Queue name" => "second",
-			"Waiting" => 17,
-			"In progress" => 0,
-			"Completed" => 43,
-			"Failed" => 7,
+		'second' => [
+			'Queue name' => 'second',
+			'Waiting' => 17,
+			'In progress' => 0,
+			'Completed' => 43,
+			'Failed' => 7,
 		],
-		"third" => [
-			"Queue name" => "third",
-			"Waiting" => 16,
-			"In progress" => 0,
-			"Completed" => 43,
-			"Failed" => 7,
+		'third' => [
+			'Queue name' => 'third',
+			'Waiting' => 16,
+			'In progress' => 0,
+			'Completed' => 43,
+			'Failed' => 7,
 		],
 	]);
 
 	expect($plugin->stats('first'))->toBe([
-		"Queue name" => "first",
-		"Waiting" => 17,
-		"In progress" => 0,
-		"Completed" => 42,
-		"Failed" => 8,
+		'Queue name' => 'first',
+		'Waiting' => 17,
+		'In progress' => 0,
+		'Completed' => 42,
+		'Failed' => 8,
 	]);
 
 	expect($kirby->site()->queue('third')->stats())->toBe([
-		"Queue name" => "third",
-		"Waiting" => 16,
-		"In progress" => 0,
-		"Completed" => 43,
-		"Failed" => 7,
+		'Queue name' => 'third',
+		'Waiting' => 16,
+		'In progress' => 0,
+		'Completed' => 43,
+		'Failed' => 7,
 	]);
 
 	$cli = new Kirby\CLI\CLI($kirby);
@@ -101,5 +101,4 @@ test('Complex Stats & CLI test', function() {
 
 	expect($plugin->next_job())->toBeNull();
 	expect($plugin->count_jobs())->toBe(0);
-
 });

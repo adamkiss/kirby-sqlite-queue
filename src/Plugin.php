@@ -5,10 +5,11 @@ namespace Adamkiss\SqliteQueue;
 use Kirby\Cms\App;
 use Kirby\Exception\InvalidArgumentException;
 use Kirby\Toolkit\A;
-use Kirby\Toolkit\Facade;
 use Kirby\Toolkit\Collection;
+use Kirby\Toolkit\Facade;
 
-class Plugin extends Facade {
+class Plugin extends Facade
+{
 	private App $kirby;
 
 	protected static ?Plugin $instance = null;
@@ -20,7 +21,8 @@ class Plugin extends Facade {
 	 * Private constructor to prevent direct instantiation.
 	 * Initializes the plugin and registers all queues.
 	 */
-	public function __construct(?App $kirby = null){
+	public function __construct(?App $kirby = null)
+	{
 		$this->kirby = $kirby ?? kirby();
 
 		$this->queues = new Collection();
@@ -40,16 +42,16 @@ class Plugin extends Facade {
 	/**
 	 * Get the singleton instance of the plugin.
 	 */
-	static function instance(?App $kirby = null)
+	public static function instance(?App $kirby = null)
 	{
-        if (
-            self::$instance !== null &&
-            ($kirby === null || self::$instance->kirby === $kirby)
-        ) {
-            return self::$instance;
-        }
+		if (
+			self::$instance !== null &&
+			($kirby === null || self::$instance->kirby === $kirby)
+		) {
+			return self::$instance;
+		}
 
-        return self::$instance = new self($kirby);
+		return self::$instance = new self($kirby);
 	}
 
 	/**
@@ -58,7 +60,7 @@ class Plugin extends Facade {
 	public function option(?string $key = null, mixed $default = null): mixed
 	{
 		if (is_null($key)) {
-			return $this->kirby->option("adamkiss.kirby-sqlite-queue", $default);
+			return $this->kirby->option('adamkiss.kirby-sqlite-queue', $default);
 		}
 
 		return $this->kirby->option("adamkiss.kirby-sqlite-queue.{$key}", $default);
@@ -97,7 +99,7 @@ class Plugin extends Facade {
 	 */
 	public function get(string $name = 'default'): ?Queue
 	{
-		if (! $this->has($name)) {
+		if (!$this->has($name)) {
 			throw new InvalidArgumentException("Queue '$name' does not exist.");
 			return null;
 		}
@@ -110,7 +112,7 @@ class Plugin extends Facade {
 	 */
 	public function add(string|array $name, ...$data): mixed
 	{
-		if (! is_string($name)) {
+		if (!is_string($name)) {
 			$queue = $this->all()->first();
 			$data = A::merge([$name], $data);
 		} else {
@@ -139,7 +141,8 @@ class Plugin extends Facade {
 	/**
 	 * Get stats about the queues (optionally, for a specific queue)
 	 */
-	function stats(?string $for = null) : array {
+	public function stats(?string $for = null): array
+	{
 		return $this->db()->get_stats($for);
 	}
 }

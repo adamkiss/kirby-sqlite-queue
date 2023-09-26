@@ -3,13 +3,12 @@
 use Adamkiss\SqliteQueue\Plugin;
 use Adamkiss\SqliteQueue\Queue;
 use Kirby\Exception\InvalidArgumentException;
-use Kirby\Filesystem\F;
 
 it('integrates with Kirby', function () {
 	$kirby = createKirby([
 		'database' => ':memory:',
 		'queues' => [
-			'default' => fn() => null,
+			'default' => fn () => null,
 		],
 	]);
 	$plugin = Plugin::instance($kirby);
@@ -24,7 +23,7 @@ it('integrates with Kirby', function () {
 
 	expect($site->queue('default'))->toBeInstanceOf(Queue::class);
 
-	expect(fn() => $site->queue('non-existent'))->toThrow(InvalidArgumentException::class);
+	expect(fn () => $site->queue('non-existent'))->toThrow(InvalidArgumentException::class);
 
 	// CLI
 	$cli = new Kirby\CLI\CLI($kirby);
@@ -36,7 +35,7 @@ it('integrates with Kirby', function () {
 	expect($kirby->site()->queue('default'))->toEqual(queue('default'));
 });
 
-it('supports queues defined in plugins', function() {
+it('supports queues defined in plugins', function () {
 	$kirby = createKirby([
 		'database' => ':memory:',
 	], [
@@ -67,7 +66,7 @@ it('supports queues defined in plugins', function() {
 		->toHaveMethod('retries', 3);
 });
 
-it('creates a database', function() {
+it('creates a database', function () {
 	$kirby = createKirby([
 		'database' => ':memory:',
 	]);
@@ -76,11 +75,11 @@ it('creates a database', function() {
 	expect($plugin->db())->toBeInstanceOf(\Adamkiss\SqliteQueue\Database::class);
 });
 
-it('provides a way to add jobs', function() {
+it('provides a way to add jobs', function () {
 	$kirby = createKirby([
 		'database' => ':memory:',
 		'queues' => [
-			'notdefault' => fn() => null,
+			'notdefault' => fn () => null,
 		]
 	]);
 	$plugin = Plugin::instance($kirby);
@@ -95,11 +94,11 @@ it('provides a way to add jobs', function() {
 	expect($planned->available_at)->not->toBeNull();
 });
 
-it('returns the next job to be done', function() {
+it('returns the next job to be done', function () {
 	$kirby = createKirby([
 		'database' => ':memory:',
 		'queues' => [
-			'notdefault' => fn() => null,
+			'notdefault' => fn () => null,
 		]
 	]);
 	$plugin = Plugin::instance($kirby);
