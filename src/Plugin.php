@@ -28,7 +28,7 @@ class Plugin extends Facade {
 		// Get defaults
 		$defaults = A::get(
 			$this->option(default: []),
-			['sync', 'retries', 'backoff', 'priority']
+			['sync', 'retries', 'backoff', 'priority', 'sync']
 		);
 
 		// Register queues

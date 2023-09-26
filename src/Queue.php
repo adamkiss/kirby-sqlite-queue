@@ -8,7 +8,8 @@ use Kirby\Toolkit\A;
 use Kirby\Toolkit\Date;
 use Kirby\Toolkit\Obj;
 
-class Queue {
+class Queue
+{
 	protected array $options;
 
 	/**
@@ -23,7 +24,7 @@ class Queue {
 		// if only handler is passed
 		if ($options instanceof Closure) {
 			$options = ['handler' => $options];
-		} else if (is_callable($options)) {
+		} elseif (is_callable($options)) {
 			$options = ['handler' => Closure::fromCallable($options)];
 		}
 
@@ -88,9 +89,18 @@ class Queue {
 	}
 
 	/**
+	 * Get the priority of this queue.
+	 */
+	public function sync(): bool
+	{
+		return $this->options['sync'];
+	}
+
+
+	/**
 	 * Get the number of jobs in the queue.
 	 */
-	function count(): int
+	public function count(): int
 	{
 		return $this->plugin()->db()->count_jobs($this->name());
 	}
@@ -112,8 +122,19 @@ class Queue {
 		array $data = [],
 		string|Date|null $execute_at = null,
 		int $attempt = 1
-	): Job
-	{
+	): mixed {
+		// If sync, execute immediately
+		if ($this->sync()) {
+			return (new Job(
+				plugin: $this->plugin(),
+				queue: $this,
+				data: $data,
+				available_at: $execute_at,
+				attempt: $attempt,
+			))->executeImmediately();
+		}
+
+		// convert string to Date
 		if (is_string($execute_at)) {
 			$execute_at = new Date($execute_at);
 		}

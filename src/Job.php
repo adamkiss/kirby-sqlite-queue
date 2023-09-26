@@ -138,4 +138,11 @@ class Job
 			return $result;
 		}
 	}
+
+	/**
+	 * Execute the job immediately
+	 */
+	function executeImmediately(): mixed {
+		return $this->queue->handler()($this->data);
+	}
 }

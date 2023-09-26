@@ -7,14 +7,17 @@ use Adamkiss\SqliteQueue\Queue;
 use Adamkiss\SqliteQueue\Plugin;
 use Adamkiss\SqliteQueue\Result;
 
-class TestCallable {
-	public static function handler($data) {
+class TestCallable
+{
+	public static function handler($data)
+	{
 		return $data['param1'];
 	}
 }
 
-if(! function_exists('test_callable_in_string')) {
-	function test_callable_in_string($data) {
+if (!function_exists('test_callable_in_string')) {
+	function test_callable_in_string($data)
+	{
 		return $data['param1'];
 	}
 }
@@ -28,7 +31,7 @@ beforeEach(function () {
 		'queues' => [
 			'default' => [TestCallable::class, 'handler'],
 			'important' => [
-				'handler' => fn($data) => $data['param2'],
+				'handler' => fn ($data) => $data['param2'],
 				'priority' => 1,
 				'retries' => 5,
 			],
@@ -38,21 +41,24 @@ beforeEach(function () {
 				'retries' => 0,
 			],
 			'fails' => [
-				'handler' => fn($data) => throw new Exception('Failed'),
+				'handler' => fn ($data) => throw new Exception('Failed'),
 				'priority' => 1,
 				'retries' => 1,
 				'backoff' => 0,
 			],
-			'fails-with-backoff' => fn($data) => throw new Exception('Failed'),
+			'fails-with-backoff' => fn ($data) => throw new Exception('Failed'),
 			'handler-in-string' => 'test_callable_in_string',
 			'handler-in-string-in-array' => [
 				'handler' => 'test_callable_in_string',
-			]
+			],
+			'sync-queue' => [
+				'handler' => fn ($data) => $data['hello'],
+				'sync' => true,
+			],
 		]
 	]);
 	$this->plugin = Plugin::instance($this->kirby);
 });
-
 
 it('accepts jobs', function () {
 	$job1 = $this->kirby->site()->queue('default')->add([
@@ -113,7 +119,7 @@ it('can work jobs', function () {
 	expect($result->result())->toBe('value1');
 });
 
-it('can clear itself', function() {
+it('can clear itself', function () {
 	$this->kirby->site()->queue()->add([
 		'param1' => 'value1',
 		'param2' => 'value2',
@@ -132,7 +138,7 @@ it('can clear itself', function() {
 	expect($this->plugin->get('default')->count())->toBe(0);
 });
 
-it('can retry a failed job', function() {
+it('can retry a failed job', function () {
 	$job = $this->kirby->site()->queue('fails')->add([
 		'param1' => 'value1',
 		'param2' => 'value2',
@@ -157,7 +163,7 @@ it('can retry a failed job', function() {
 	expect($this->plugin->get('fails')->count())->toBe(0);
 });
 
-it('can back off a retry of a failed job', function() {
+it('can back off a retry of a failed job', function () {
 	$job = $this->kirby->site()->queue('fails-with-backoff')->add([
 		'param1' => 'value1',
 		'param2' => 'value2',
@@ -179,22 +185,41 @@ it('can back off a retry of a failed job', function() {
 		->toBeInstanceOf(Date::class)
 		->toBeGreaterThan(new Date('+14 minutes +59 seconds'))
 		->toBeLessThan(new Date('+15 minutes +1 seconds'));
-		// Default backoff time is 15 minutes
+	// Default backoff time is 15 minutes
 });
 
 describe('handler formats', function () {
-	test('closures', function() {
+	test('closures', function () {
 		expect($this->plugin->get('important')->handler())->toBeInstanceOf(Closure::class);
 		expect($this->plugin->get('fails')->handler())->toBeInstanceOf(Closure::class);
 	});
 
-	test('class method arrays', function() {
+	test('class method arrays', function () {
 		expect($this->plugin->get('unimportant')->handler())->toBeInstanceOf(Closure::class);
 		expect($this->plugin->get('default')->handler())->toBeInstanceOf(Closure::class);
 	});
 
-	test('strings', function() {
+	test('strings', function () {
 		expect($this->plugin->get('handler-in-string')->handler())->toBeInstanceOf(Closure::class);
 		expect($this->plugin->get('handler-in-string-in-array')->handler())->toBeInstanceOf(Closure::class);
 	});
+});
+
+it('can work queue in a sync manner', function () {
+	$queue = $this->kirby->site()->queue('sync-queue');
+
+	expect($queue->sync())->toBe(true);
+	expect($queue->count())->toBe(0);
+
+	$result = $queue->add([
+		'hello' => 'world',
+		'unused' => 'param',
+	]);
+	expect($result)->toBeString();
+	expect($queue->count())->toBe(0);
+
+	expect($this->kirby->site()->queue()->next_job())->toBeNull();
+
+	expect(fn () => $queue->add(['wrong' => 'params']))->toThrow('Undefined array key');
+	expect($queue->count())->toBe(0);
 });
